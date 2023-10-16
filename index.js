@@ -21,7 +21,8 @@ app.use('/api/v1/emp', validateEmployeeData);
 
 
 // db connect
-const dbUrl = 'mongodb+srv://nanamiwaku:SrXQVmKIHbkQqj0O>@cluster0.bzf8vmp.mongodb.net/?retryWrites=true&w=majority';
+const dbUrl = 'mongodb+srv://nanamiwaku:CWhW6Yb32grTqwIc@cluster0.bzf8vmp.mongodb.net/comp3123_assigment1';
+
 
 
 mongoose.connect(dbUrl, {

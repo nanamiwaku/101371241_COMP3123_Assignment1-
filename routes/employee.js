@@ -1,76 +1,70 @@
-const express = require("express");
-const employeeModel = require('../models/employeeModel'); 
-const routes = express.Router();
+const express = require('express');
+const router = express.Router();
+const Employee = require('../models/employeeModel');
+const { validateEmployeeData } = require('../middleware');
 
-// Get All Employees
-routes.get("/employees", async (req, res) => {
+// Route to create a new employee
+router.post('/employees', validateEmployeeData, async (req, res) => {
     try {
-        const employeeList = await employeeModel.find({});
-        res.status(200).send(employeeList);
+        const newEmployee = new Employee(req.body);
+        const savedEmployee = await newEmployee.save();
+        res.status(201).json(savedEmployee);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(400).json({ error: 'Failed to create an employee.' });
     }
 });
 
-// Add NEW Employee
-routes.post("/employees", async (req, res) => {
+// Route to get all employees
+router.get('/employees', async (req, res) => {
     try {
-        const newEmployee = new employeeModel({
-            ...req.body
-        });
-        await newEmployee.save();
-        res.status(201).send(newEmployee); // Status 201 for "Created"
+        const employees = await Employee.find();
+        res.status(200).json(employees);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(400).json({ error: 'Failed to fetch employees.' });
     }
 });
 
 // Route to get an employee by ID
-router.get('/employees/{eid}', async (req, res) => {
-  const { eid } = req.params.eid;
-  try {
-      const employee = await Employee.findById(eid);
-      if (!employee) {
-          return res.status(404).json({ error: 'Employee not found.' });
-      }
-      res.status(200).json(employee);
-  } catch (error) {
-      res.status(400).json({ error: 'Failed to fetch the employee.' });
-  }
+router.get('/employees/:eid', async (req, res) => {
+    const { eid } = req.params.eid;
+    try {
+        const employee = await Employee.findById(eid);
+        if (!employee) {
+            return res.status(404).json({ error: 'Employee not found.' });
+        }
+        res.status(200).json(employee);
+    } catch (error) {
+        res.status(400).json({ error: 'Failed to fetch the employee.' });
+    }
 });
 
-// Update existing Employee By Id
-routes.put("/employees/:eid", async (req, res) => {
+// Route to update an employee by ID
+router.put('/employees/:eid', async (req, res) => {
+    const { eid } = req.params;
     try {
-        const employeeId = req.params.eid;
-        const updatedEmployee = await employeeModel.findByIdAndUpdate(employeeId, req.body, { new: true });
+        const updatedEmployee = await Employee.findByIdAndUpdate(eid, req.body, { new: true });
         if (!updatedEmployee) {
-            return res.status(404).send({ message: "Employee not found" });
+            return res.status(404).json({ error: 'Employee not found.' });
         }
-        res.status(200).send(updatedEmployee);
+        res.status(200).json(updatedEmployee);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(400).json({ error: 'Failed to update the employee.' });
     }
 });
 
-// Delete Employee By ID
-routes.delete("/employees/:eid", async (req, res) => {
+// Route to delete an employee by ID
+router.delete('/employees/:eid', async (req, res) => {
+    const { eid } = req.params;
     try {
-        const employeeId = req.params.eid;
-        const deletedEmployee = await employeeModel.findByIdAndRemove(employeeId);
+        const deletedEmployee = await Employee.findByIdAndRemove(eid);
         if (!deletedEmployee) {
-            return res.status(404).send({ message: "Employee not found" });
+            return res.status(404).json({ error: 'Employee not found.' });
         }
-        res.status(204).send(); // Status 204 for "No Content"
+        res.status(204).send();
     } catch (error) {
-        res.status(500).send(error);
+        res.status(400).json({ error: 'Failed to delete the employee.' });
     }
 });
 
-
-
-
-
-module.exports = routes;
-
+module.exports = router;
 
